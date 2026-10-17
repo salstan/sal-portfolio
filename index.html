@@ -3,1856 +3,620 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sal (Salstan Sesadimai) — Creative Vibe Coder & UI/UX Architect</title>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Exact Required CDNs -->
+  <title>SAL — Creative Vibe Coder & UI/UX Architect</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Three.js & GLTFLoader -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            obsidian: '#06080E',
-            slateHud: '#0E131F',
-            irisCyan: '#00F0FF',
-            oddsAmber: '#FFB800',
-            synthViolet: '#7C5CFF',
-            alabaster: '#F2F5FA',
-            mutedSlate: '#8A99AD'
-          },
-          fontFamily: {
-            display: ['Space Grotesk', 'sans-serif'],
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          }
-        }
-      }
-    };
-  </script>
-
   <style>
-    :root {
-      --bg-obsidian: #06080E;
-      --surface-slate: rgba(14, 19, 31, 0.78);
-      --accent-cyan: #00F0FF;
-      --accent-amber: #FFB800;
-      --accent-violet: #7C5CFF;
-      --text-alabaster: #F2F5FA;
-      --text-muted: #8A99AD;
-      --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
-      --ease-move: cubic-bezier(0.25, 1, 0.5, 1);
-      --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
-      --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: var(--bg-obsidian);
-      color: var(--text-alabaster);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      user-select: none;
+      background-color: #05060A;
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
     }
-
-    #webgl-container {
+    h1, h2, h3, .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    #canvas-container {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
       z-index: 1;
+      pointer-events: auto;
     }
-
-    /* Subtle studio radial vignette */
-    .studio-vignette {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 2;
-      background:
-        radial-gradient(circle at 50% 45%, transparent 28%, rgba(6, 8, 14, 0.68) 78%, rgba(6, 8, 14, 0.96) 100%),
-        linear-gradient(180deg, rgba(6, 8, 14, 0.75) 0%, transparent 18%, transparent 82%, rgba(6, 8, 14, 0.9) 100%);
-    }
-
-    /* Fine optical grid overlay */
-    .optical-grid {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 2;
-      opacity: 0.14;
-      background-image:
-        linear-gradient(to right, rgba(0, 240, 255, 0.08) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 240, 255, 0.08) 1px, transparent 1px);
-      background-size: 56px 56px;
-      mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 80%);
-      -webkit-mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 80%);
-    }
-
-    /* Glassmorphic HUD surfaces */
     .glass-panel {
-      background: rgba(12, 17, 29, 0.76);
+      background: rgba(12, 15, 24, 0.72);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 240, 255, 0.22);
-      box-shadow:
-        0 24px 60px -12px rgba(0, 0, 0, 0.8),
-        0 0 32px -8px rgba(0, 240, 255, 0.16),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-
-    .glass-pill {
-      background: rgba(11, 16, 28, 0.82);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(242, 245, 250, 0.14);
-      transition:
-        transform 150ms var(--ease-enter),
-        border-color 200ms ease,
-        background-color 200ms ease,
-        box-shadow 200ms ease;
-      touch-action: manipulation;
+    .glow-btn:hover {
+      box-shadow: 0 0 25px rgba(0, 230, 118, 0.4);
     }
-
-    @media (hover: hover) and (pointer: fine) {
-      .glass-pill:hover {
-        border-color: rgba(0, 240, 255, 0.65);
-        background: rgba(0, 240, 255, 0.11);
-        box-shadow: 0 0 24px rgba(0, 240, 255, 0.28);
-        transform: translateY(-2px);
-      }
-    }
-
-    .glass-pill:active,
-    .interactive-btn:active {
-      transform: scale(0.97) !important;
-      transition-duration: 90ms;
-    }
-
-    .glass-pill.active-hotspot {
-      border-color: #00F0FF;
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(124, 92, 255, 0.18));
-      box-shadow: 0 0 28px rgba(0, 240, 255, 0.42), inset 0 0 12px rgba(0, 240, 255, 0.25);
-    }
-
-    /* 3D anchored floating pins */
-    .hotspot-anchor {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 15;
-      pointer-events: auto;
-      will-change: transform, opacity;
-      transition: opacity 250ms var(--ease-enter);
-    }
-
-    /* Pulse ring on 3D node */
-    @keyframes pulseRing {
-      0% { transform: scale(0.85); opacity: 0.9; }
-      70% { transform: scale(1.75); opacity: 0; }
-      100% { transform: scale(1.75); opacity: 0; }
-    }
-
-    .node-ping::before {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 9999px;
-      border: 1.5px solid #00F0FF;
-      animation: pulseRing 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-    }
-
-    /* Story card transition */
-    #story-card-wrapper {
-      transition:
-        transform 420ms var(--ease-expo),
-        opacity 320ms var(--ease-enter);
-      will-change: transform, opacity;
-    }
-
-    #story-card-wrapper.card-hidden {
-      opacity: 0;
-      pointer-events: none;
-      transform: translate3d(42px, 0, 0) scale(0.96);
-    }
-
-    #story-card-wrapper.card-visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-
-    /* Eye CTA Glow */
-    .eye-portal-btn {
-      background: linear-gradient(135deg, #00F0FF 0%, #3B82F6 50%, #7C5CFF 100%);
-      color: #06080E;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.55), 0 0 70px rgba(124, 92, 255, 0.35);
-      transition:
-        transform 180ms var(--ease-enter),
-        box-shadow 220ms ease,
-        filter 220ms ease;
-      touch-action: manipulation;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .eye-portal-btn:hover {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 0 48px rgba(0, 240, 255, 0.85), 0 0 90px rgba(124, 92, 255, 0.55);
-        filter: brightness(1.08);
-      }
-    }
-
-    /* Warp tunnel canvas overlay */
-    #warp-canvas {
+    .warp-flash {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 35;
-      opacity: 0;
-    }
-
-    /* Mindscape (Inside Eye) view */
-    #mindscape-view {
-      position: fixed;
-      inset: 0;
-      z-index: 30;
-      overflow-y: auto;
-      overflow-x: hidden;
+      background: radial-gradient(circle, #00F0FF 0%, #6366F1 40%, #05060A 100%);
+      z-index: 40;
       opacity: 0;
       pointer-events: none;
-      transform: scale(1.06);
-      transition:
-        opacity 450ms var(--ease-enter),
-        transform 550ms var(--ease-expo);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.14) 0%, rgba(124, 92, 255, 0.08) 35%, rgba(6, 8, 14, 0.94) 75%),
-        rgba(6, 8, 14, 0.88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-
-    #mindscape-view.mindscape-active {
-      opacity: 1;
-      pointer-events: auto;
-      transform: scale(1);
-    }
-
-    /* Project Card Craft */
-    .project-card {
-      background: linear-gradient(165deg, rgba(16, 23, 38, 0.88) 0%, rgba(9, 13, 22, 0.94) 100%);
-      border: 1px solid rgba(242, 245, 250, 0.11);
-      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75);
-      transition:
-        transform 280ms var(--ease-expo),
-        border-color 240ms ease,
-        box-shadow 280ms ease;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .project-card:hover {
-        transform: translateY(-6px);
-        border-color: rgba(0, 240, 255, 0.48);
-        box-shadow:
-          0 28px 65px -12px rgba(0, 0, 0, 0.85),
-          0 0 36px -6px rgba(0, 240, 255, 0.22);
-      }
-    }
-
-    /* Modal Backdrop & Dialog */
-    #case-study-modal {
-      transition: opacity 260ms var(--ease-enter);
-    }
-
-    #case-study-dialog {
-      transition:
-        transform 300ms var(--ease-expo),
-        opacity 260ms var(--ease-enter);
-    }
-
-    #case-study-modal.modal-closed {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #case-study-modal.modal-closed #case-study-dialog {
-      transform: scale(0.94) translateY(14px);
-      opacity: 0;
-    }
-
-    #case-study-modal.modal-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    #case-study-modal.modal-open #case-study-dialog {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(6, 8, 14, 0.6);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(0, 240, 255, 0.28);
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 240, 255, 0.55);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .node-ping::before {
-        animation: none;
-      }
     }
   </style>
 </head>
-<body class="relative select-none">
+<body class="selection:bg-emerald-500 selection:text-black">
 
-  <!-- 1. THREE.JS 3D WEBGL VIEWPORT -->
-  <div id="webgl-container" aria-label="Interactive 3D Avatar of Salstan Sesadimai"></div>
-  <div class="studio-vignette"></div>
-  <div class="optical-grid"></div>
+  <!-- Warp Flash Overlay for Eye Transition -->
+  <div id="warp-overlay" class="warp-flash"></div>
 
-  <!-- Warp Speed Optical Tunnel Overlay Canvas -->
-  <canvas id="warp-canvas"></canvas>
+  <!-- 3D WebGL Canvas -->
+  <div id="canvas-container"></div>
 
-  <!-- 2. TOP STUDIO TELEMETRY HEADER (OUTSIDE THE EYE) -->
-  <header id="exterior-header" class="fixed top-0 left-0 right-0 z-20 px-4 sm:px-8 py-4 flex items-center justify-between pointer-events-none transition-opacity duration-300">
-    <!-- Brand Identity -->
-    <div class="flex items-center gap-3.5 pointer-events-auto">
-      <button onclick="resetCameraOverview()" class="group flex items-center gap-3 text-left focus:outline-none" title="Reset 3D Camera View">
-        <div class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center border border-irisCyan/40 group-hover:border-irisCyan transition-colors">
-          <span class="font-display font-bold text-lg tracking-tight text-irisCyan">S.</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-display font-bold text-sm sm:text-base tracking-tight text-alabaster">SALSTAN SESADIMAI</h1>
-            <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-irisCyan/10 text-irisCyan border border-irisCyan/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-irisCyan animate-pulse"></span>
-              MQF LEVEL 6
-            </span>
-          </div>
-          <p class="text-xs text-mutedSlate font-mono">Creative Vibe Coder &amp; UI/UX Architect</p>
-        </div>
-      </button>
+  <!-- TOP NAVIGATION BAR -->
+  <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-4 md:px-12 pointer-events-none">
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
+      <span class="font-display font-bold tracking-wider text-lg text-white">SAL<span class="text-emerald-400">.3D</span></span>
+      <span class="hidden sm:inline-block text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">
+        MQF Level 6 CSE • UI/UX Architect
+      </span>
     </div>
 
-    <!-- Right Controls: Model Status + Direct Eye Dive + Custom GLB Loader -->
-    <div class="flex items-center gap-2.5 pointer-events-auto">
-      <div id="avatar-status-badge" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg glass-panel text-xs font-mono text-mutedSlate">
-        <span id="status-dot" class="w-2 h-2 rounded-full bg-irisCyan"></span>
-        <span id="status-text">INITIALIZING 3D RIG...</span>
-      </div>
-
-      <label for="glb-upload-input" class="glass-pill interactive-btn cursor-pointer px-3 py-2 rounded-lg text-xs font-mono text-alabaster/90 flex items-center gap-1.5" title="Load local sal.glb file directly if browser blocks local file:// fetch">
-        <i data-lucide="box" class="w-3.5 h-3.5 text-irisCyan"></i>
-        <span class="hidden sm:inline">Load .GLB</span>
-        <input id="glb-upload-input" type="file" accept=".glb,.gltf" class="hidden" />
-      </label>
-
-      <button onclick="triggerEyeZoom()" class="glass-pill interactive-btn px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-irisCyan border-irisCyan/40 flex items-center gap-1.5">
-        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-        <span>Enter Sal's Eye</span>
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <button id="exit-eye-btn" onclick="exitEyeView()" class="hidden items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-emerald-500 text-black hover:bg-emerald-400 transition">
+        <span>← Fly Back Out to 3D Avatar</span>
+      </button>
+      <button onclick="enterEyeView()" class="px-4 py-2 rounded-full text-xs font-medium glass-panel hover:border-emerald-400/50 transition text-slate-200">
+        Skip to Projects ➔
       </button>
     </div>
   </header>
 
-  <!-- 3. FLOATING 3D HOTSPOT PINS (ANCHORED TO AVATAR IN 3D SPACE) -->
-  <div id="floating-hotspots-layer" class="fixed inset-0 pointer-events-none z-15 hidden lg:block">
-    <!-- Floating Pin 1: Chest/Core -->
-    <button
-      id="pin-1"
-      onclick="selectHotspot(1)"
-      class="hotspot-anchor glass-pill rounded-full pl-2.5 pr-4 py-1.5 flex items-center gap-2.5 group focus:outline-none"
-      aria-label="Inspect Hotspot 01: Who is Sal?"
-    >
-      <span class="relative flex items-center justify-center w-6 h-6 rounded-full bg-irisCyan/20 border border-irisCyan text-irisCyan font-mono text-[11px] font-semibold node-ping">
-        01
-      </span>
-      <span class="font-mono text-xs font-medium tracking-wide text-alabaster group-hover:text-irisCyan transition-colors">
-        [01] WHO IS SAL?
-      </span>
-    </button>
+  <!-- ACT I: OUTSIDE THE EYE (3D INTERACTIVE STORY STAGE) -->
+  <main id="stage-outside" class="relative z-20 min-h-screen flex flex-col justify-between p-6 md:p-12 pointer-events-none">
+    
+    <!-- Top Intro Tag -->
+    <div class="mt-14 max-w-md pointer-events-auto">
+      <p class="text-xs uppercase tracking-[0.25em] text-emerald-400 font-semibold mb-2">Interactive 3D Portfolio</p>
+      <h1 class="text-3xl md:text-5xl font-bold leading-tight text-white">
+        Salstan Sesadimai
+      </h1>
+      <p class="text-sm text-slate-400 mt-2">
+        Move your cursor to interact with Sal's 3D core. Click the story nodes below to explore the architecture, or dive straight into the eye.
+      </p>
+    </div>
 
-    <!-- Floating Pin 2: Hands/Craft -->
-    <button
-      id="pin-2"
-      onclick="selectHotspot(2)"
-      class="hotspot-anchor glass-pill rounded-full pl-2.5 pr-4 py-1.5 flex items-center gap-2.5 group focus:outline-none"
-      aria-label="Inspect Hotspot 02: Why Hire Sal?"
-    >
-      <span class="relative flex items-center justify-center w-6 h-6 rounded-full bg-oddsAmber/20 border border-oddsAmber text-oddsAmber font-mono text-[11px] font-semibold node-ping">
-        02
-      </span>
-      <span class="font-mono text-xs font-medium tracking-wide text-alabaster group-hover:text-oddsAmber transition-colors">
-        [02] WHY HIRE SAL?
-      </span>
-    </button>
-
-    <!-- Floating Pin 3: Sal's Eyes / Vision -->
-    <button
-      id="pin-3"
-      onclick="selectHotspot(3)"
-      class="hotspot-anchor glass-pill rounded-full pl-2.5 pr-4 py-1.5 flex items-center gap-2.5 group focus:outline-none"
-      aria-label="Inspect Hotspot 03: Sal's Vision"
-    >
-      <span class="relative flex items-center justify-center w-6 h-6 rounded-full bg-synthViolet/25 border border-irisCyan text-irisCyan font-mono text-[11px] font-semibold node-ping">
-        03
-      </span>
-      <span class="font-mono text-xs font-medium tracking-wide text-alabaster group-hover:text-irisCyan transition-colors">
-        [03] SAL'S VISION
-      </span>
-    </button>
-  </div>
-
-  <!-- Ambient Guide Prompt (Bottom Left) -->
-  <div id="cursor-tracking-hint" class="fixed bottom-24 left-6 z-15 hidden xl:flex items-center gap-3 px-3.5 py-2 rounded-xl glass-panel text-xs font-mono text-mutedSlate pointer-events-none">
-    <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-irisCyan"></i>
-    <span>Move cursor to track Sal's gaze • Select a node to inspect</span>
-  </div>
-
-  <!-- 4. SLIDE-IN GLASSMORPHIC STORY CARD (OUTSIDE THE EYE) -->
-  <aside
-    id="story-card-wrapper"
-    class="fixed right-4 sm:right-8 top-20 sm:top-1/2 sm:-translate-y-1/2 z-20 w-[calc(100vw-2rem)] sm:w-[430px] card-hidden"
-    aria-live="polite"
-  >
-    <div class="glass-panel rounded-2xl p-6 sm:p-7 relative overflow-hidden">
-      <!-- Top Decorative Accent Bar -->
-      <div id="story-accent-bar" class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-irisCyan via-synthViolet to-oddsAmber"></div>
-
-      <!-- Card Header Meta -->
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-          <span id="story-step-badge" class="px-2.5 py-1 rounded-md font-mono text-xs font-semibold bg-irisCyan/15 text-irisCyan border border-irisCyan/30">
-            [01] CORE TELEMETRY
-          </span>
-          <span id="story-target-zone" class="text-xs font-mono text-mutedSlate">
-            TARGET // CHEST CORE
-          </span>
-        </div>
-        <button
-          onclick="resetCameraOverview()"
-          class="w-8 h-8 rounded-lg glass-pill flex items-center justify-center text-mutedSlate hover:text-alabaster focus:outline-none"
-          title="Close card and reset camera"
-          aria-label="Close story card"
-        >
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+    <!-- Dynamic Story Card (Appears on Left/Right when nodes are clicked) -->
+    <div id="story-card" class="my-auto max-w-lg glass-panel rounded-2xl p-6 md:p-8 pointer-events-auto transition-all duration-500 shadow-2xl border-l-4 border-l-emerald-400">
+      <div class="flex items-center justify-between mb-3">
+        <span id="story-badge" class="text-xs font-mono uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          NODE 01 // IDENTITY
+        </span>
+        <span class="text-xs text-slate-400 font-mono">INTERACTIVE LOG</span>
       </div>
-
-      <!-- Dynamic Story Title -->
-      <h2 id="story-title" class="font-display font-bold text-xl sm:text-2xl text-alabaster leading-snug mb-3">
-        Sal — Creative Vibe Coder &amp; UI/UX Architect
+      <h2 id="story-title" class="text-2xl md:text-3xl font-bold text-white mb-3">
+        Who is Sal?
       </h2>
-
-      <!-- Dynamic Story Copy -->
-      <p id="story-body" class="text-sm sm:text-[15px] text-alabaster/85 leading-relaxed mb-5">
-        Holding a B.E. in Computer Science Engineering (MQF Level 6) and certified in UI/UX Product Design with 2+ years of UI/UX internship experience. Sal blends engineering logic with high-craft visual design—using AI-augmented vibe-coding workflows, Figma, and Supabase to build interactive web systems.
+      <p id="story-body" class="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+        A <strong class="text-white">Creative Vibe Coder & UI/UX Architect</strong> backed by a <strong class="text-emerald-400">B.E. in Computer Science Engineering (MQF Level 6)</strong> and specialized UI/UX product training. With 2+ years of hands-on UI/UX internship experience, Sal bridges deep software logic with modern AI-native workflows to ship high-craft interactive systems at 10x speed.
       </p>
 
-      <!-- Contextual Telemetry Tags -->
-      <div id="story-tags" class="flex flex-wrap gap-2 mb-6">
-        <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-white/5 text-alabaster/80 border border-white/10">B.E. CSE (MQF Level 6)</span>
-        <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-white/5 text-alabaster/80 border border-white/10">2+ Yrs UI/UX Experience</span>
-        <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-white/5 text-alabaster/80 border border-white/10">Figma + Supabase + AI</span>
-      </div>
-
-      <!-- Special Big Glowing Button (Shown on [03] SAL'S VISION) -->
-      <div id="story-vision-cta" class="hidden mb-5">
-        <button
-          onclick="triggerEyeZoom()"
-          class="eye-portal-btn interactive-btn w-full py-3.5 px-5 rounded-xl font-display font-bold text-sm sm:text-base tracking-wide flex items-center justify-center gap-2.5"
-        >
-          <i data-lucide="sparkles" class="w-5 h-5"></i>
-          <span>ENTER SAL'S EYE (VIEW PROJECTS)</span>
-          <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Sequential Story Navigation Footer -->
-      <div class="pt-4 border-t border-white/10 flex items-center justify-between">
-        <button
-          onclick="cycleHotspot(-1)"
-          class="glass-pill interactive-btn px-3 py-1.5 rounded-lg text-xs font-mono text-mutedSlate hover:text-alabaster flex items-center gap-1.5"
-        >
-          <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-          <span>Prev Node</span>
-        </button>
-
-        <button
-          onclick="resetCameraOverview()"
-          class="text-xs font-mono text-mutedSlate hover:text-irisCyan transition-colors"
-        >
-          Overview
-        </button>
-
-        <button
-          onclick="cycleHotspot(1)"
-          class="glass-pill interactive-btn px-3 py-1.5 rounded-lg text-xs font-mono text-irisCyan flex items-center gap-1.5"
-        >
-          <span>Next Node</span>
-          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- 5. BOTTOM INTERACTIVE STORYTELLING BAR (OUTSIDE THE EYE) -->
-  <nav
-    id="bottom-hotspot-bar"
-    aria-label="Storytelling Camera Hotspots"
-    class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[calc(100vw-1.5rem)] sm:w-auto max-w-full transition-opacity duration-300"
-  >
-    <div class="glass-panel rounded-2xl p-1.5 sm:p-2 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto">
-      <button
-        id="dock-btn-1"
-        onclick="selectHotspot(1)"
-        class="glass-pill interactive-btn px-3 sm:px-4 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-medium text-alabaster whitespace-nowrap flex items-center gap-2"
-      >
-        <span class="w-2 h-2 rounded-full bg-irisCyan"></span>
-        <span>[01] WHO IS SAL?</span>
-      </button>
-
-      <button
-        id="dock-btn-2"
-        onclick="selectHotspot(2)"
-        class="glass-pill interactive-btn px-3 sm:px-4 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-medium text-alabaster whitespace-nowrap flex items-center gap-2"
-      >
-        <span class="w-2 h-2 rounded-full bg-oddsAmber"></span>
-        <span>[02] WHY HIRE SAL?</span>
-      </button>
-
-      <button
-        id="dock-btn-3"
-        onclick="selectHotspot(3)"
-        class="glass-pill interactive-btn px-3 sm:px-4 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-medium text-alabaster whitespace-nowrap flex items-center gap-2"
-      >
-        <span class="w-2 h-2 rounded-full bg-synthViolet"></span>
-        <span>[03] SAL'S VISION</span>
-      </button>
-
-      <button
-        onclick="resetCameraOverview()"
-        class="glass-pill interactive-btn px-2.5 py-2.5 rounded-xl text-mutedSlate hover:text-alabaster flex items-center justify-center"
-        title="Reset Camera to Full Avatar"
-        aria-label="Reset Camera"
-      >
-        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-      </button>
-    </div>
-  </nav>
-
-  <!-- 6. INSIDE SAL'S MINDSCAPE — FLAGSHIP PROJECTS SCREEN (INSIDE THE EYE) -->
-  <main id="mindscape-view" aria-label="Inside Sal's Mindscape — Flagship Projects">
-    <div class="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10 min-h-screen flex flex-col justify-between">
-      
-      <!-- Top Mindscape Navigation Bar -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
-        <button
-          onclick="flyBackOutToAvatar()"
-          class="glass-pill interactive-btn px-4 sm:px-5 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-semibold text-irisCyan border-irisCyan/40 flex items-center gap-2 shadow-lg"
-        >
-          <span>← Fly Back Out to 3D Avatar</span>
-        </button>
-
-        <div class="flex items-center gap-3">
-          <span class="px-3 py-1 rounded-full text-xs font-mono bg-irisCyan/10 text-irisCyan border border-irisCyan/30 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-irisCyan animate-ping"></span>
-            OCULAR CORTEX // DEPTH 100%
-          </span>
+      <!-- Stats Strip inside Story Card -->
+      <div id="story-stats" class="grid grid-cols-3 gap-3 pt-4 border-t border-white/10 text-center">
+        <div class="p-2 rounded-lg bg-white/5">
+          <div class="text-lg font-bold text-emerald-400 font-display">MQF Lvl 6</div>
+          <div class="text-[11px] text-slate-400">B.E. Comp Sci</div>
+        </div>
+        <div class="p-2 rounded-lg bg-white/5">
+          <div class="text-lg font-bold text-indigo-400 font-display">50+ Hrs</div>
+          <div class="text-[11px] text-slate-400">60+ Students Taught</div>
+        </div>
+        <div class="p-2 rounded-lg bg-white/5">
+          <div class="text-lg font-bold text-amber-400 font-display">2+ Yrs</div>
+          <div class="text-[11px] text-slate-400">UI/UX Experience</div>
         </div>
       </div>
 
-      <!-- Mindscape Hero Header -->
-      <div class="my-8 sm:my-10">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-xs text-oddsAmber mb-3">
-          <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
-          <span>NEURAL PORTFOLIO ENGINE • 3 LIVE PRODUCTIONDEPLOYMENTS</span>
-        </div>
-        <h2 class="font-display font-bold text-3xl sm:text-5xl text-alabaster tracking-tight">
-          Inside Sal's Mindscape — Flagship Projects
-        </h2>
-        <p class="mt-3 text-mutedSlate max-w-2xl text-sm sm:text-base leading-relaxed">
-          High-frequency iGaming ecosystems, low-latency sportsbook interfaces, and AI-driven player safety telemetry engineered with precision UI/UX architecture.
-        </p>
+      <!-- Enter Eye CTA (Highlighted on Node 3) -->
+      <div id="vision-cta" class="mt-6 hidden">
+        <button onclick="enterEyeView()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-500 text-black font-bold text-sm tracking-wide uppercase glow-btn transition transform hover:scale-[1.02]">
+          👁️ Zoom Into Sal's Eye (Explore 3 Live Projects)
+        </button>
       </div>
+    </div>
 
-      <!-- 3 Interactive Live Project Cards -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7 my-auto">
-        
-        <!-- PROJECT 1: ApexOdds -->
-        <article class="project-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div>
-            <!-- Top Interactive Telemetry Preview Header -->
-            <div class="h-36 rounded-xl bg-obsidian/90 border border-white/10 p-4 mb-5 relative overflow-hidden flex flex-col justify-between">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  LIVE 67' • UCL
-                </span>
-                <span class="text-mutedSlate">LATENCY: 14ms</span>
-              </div>
-
-              <!-- Mini 2D Pitch & Live Pulsing Odds Widget -->
-              <div class="grid grid-cols-3 gap-2 my-auto pt-2">
-                <div class="px-2.5 py-2 rounded-lg bg-white/5 border border-emerald-500/40 flex flex-col">
-                  <span class="text-[10px] font-mono text-mutedSlate">1 (HOME)</span>
-                  <span class="font-mono font-bold text-sm text-emerald-400 flex items-center justify-between">
-                    1.84 <i data-lucide="trending-up" class="w-3 h-3"></i>
-                  </span>
-                </div>
-                <div class="px-2.5 py-2 rounded-lg bg-white/5 border border-white/10 flex flex-col">
-                  <span class="text-[10px] font-mono text-mutedSlate">X (DRAW)</span>
-                  <span class="font-mono font-bold text-sm text-alabaster">3.45</span>
-                </div>
-                <div class="px-2.5 py-2 rounded-lg bg-white/5 border border-rose-500/40 flex flex-col">
-                  <span class="text-[10px] font-mono text-mutedSlate">2 (AWAY)</span>
-                  <span class="font-mono font-bold text-sm text-rose-400 flex items-center justify-between">
-                    4.20 <i data-lucide="trending-down" class="w-3 h-3"></i>
-                  </span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] font-mono text-irisCyan/80 pt-1">
-                <span>2D Pitch Tracker Active</span>
-                <span>Parlay Multi: 6.34x</span>
-              </div>
-            </div>
-
-            <!-- Project Number & Tags -->
-            <div class="flex items-center justify-between gap-2 mb-2.5">
-              <span class="font-mono text-xs font-semibold text-irisCyan">PROJECT // 01</span>
-              <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-white/5 text-mutedSlate border border-white/10">Sportsbook UI</span>
-            </div>
-
-            <!-- Exact Title -->
-            <h3 class="font-display font-bold text-xl text-alabaster mb-2.5 group-hover:text-irisCyan transition-colors">
-              ApexOdds — Live Sportsbook &amp; 2D Match Tracker
-            </h3>
-
-            <!-- Exact Description -->
-            <p class="text-sm text-mutedSlate leading-relaxed mb-6">
-              Low-latency live sports betting interface with pulsing odds animations, 2D soccer pitch visualizer, and dynamic parlay calculator.
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="space-y-2.5 pt-4 border-t border-white/10">
-            <div class="grid grid-cols-2 gap-2.5">
-              <a
-                href="https://apex-odds.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="interactive-btn py-2.5 px-3 rounded-xl bg-irisCyan text-obsidian font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition"
-              >
-                <i data-lucide="external-link" class="w-4 h-4"></i>
-                <span>Live Website</span>
-              </a>
-
-              <a
-                href="https://github.com/salstan/apex-odds"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="glass-pill interactive-btn py-2.5 px-3 rounded-xl font-mono text-xs sm:text-sm text-alabaster flex items-center justify-center gap-1.5"
-              >
-                <i data-lucide="github" class="w-4 h-4"></i>
-                <span>GitHub Code</span>
-              </a>
-            </div>
-
-            <button
-              onclick="openCaseStudy('apexodds')"
-              class="glass-pill interactive-btn w-full py-2.5 px-4 rounded-xl font-mono text-xs text-irisCyan border-irisCyan/30 flex items-center justify-center gap-2"
-            >
-              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-              <span>Read Case Study</span>
-            </button>
-          </div>
-        </article>
-
-        <!-- PROJECT 2: NeonVault -->
-        <article class="project-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div>
-            <!-- Top Interactive Telemetry Preview Header -->
-            <div class="h-36 rounded-xl bg-obsidian/90 border border-white/10 p-4 mb-5 relative overflow-hidden flex flex-col justify-between">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="px-2 py-0.5 rounded bg-oddsAmber/15 text-oddsAmber border border-oddsAmber/30 flex items-center gap-1.5">
-                  <i data-lucide="zap" class="w-3 h-3"></i>
-                  60FPS CRASH ARENA
-                </span>
-                <span class="text-irisCyan">VIP TIER: CYBER IV</span>
-              </div>
-
-              <!-- Crash Multiplier Curve SVG -->
-              <div class="my-auto flex items-end justify-between gap-3 pt-1">
-                <div>
-                  <div class="text-[10px] font-mono text-mutedSlate">CURRENT MULTIPLIER</div>
-                  <div class="font-display font-bold text-2xl text-oddsAmber tracking-tight">4.82x</div>
-                </div>
-                <svg class="w-36 h-12 overflow-visible" viewBox="0 0 120 40">
-                  <path d="M 4 36 Q 55 34 112 6" fill="none" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round" />
-                  <circle cx="112" cy="6" r="4" fill="#00F0FF" />
-                </svg>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] font-mono text-mutedSlate pt-1">
-                <span>3D Loot Chests Ready</span>
-                <span class="text-oddsAmber">Quest XP: 8,450 / 10k</span>
-              </div>
-            </div>
-
-            <!-- Project Number & Tags -->
-            <div class="flex items-center justify-between gap-2 mb-2.5">
-              <span class="font-mono text-xs font-semibold text-oddsAmber">PROJECT // 02</span>
-              <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-white/5 text-mutedSlate border border-white/10">Retention &amp; Gamification</span>
-            </div>
-
-            <!-- Exact Title -->
-            <h3 class="font-display font-bold text-xl text-alabaster mb-2.5 group-hover:text-oddsAmber transition-colors">
-              NeonVault — Gamified VIP Loyalty &amp; Multiplier Arena
-            </h3>
-
-            <!-- Exact Description -->
-            <p class="text-sm text-mutedSlate leading-relaxed mb-6">
-              Interactive iGaming retention ecosystem featuring a playable 60FPS crash multiplier game, animated 3D loot chests, and live VIP quest tracking.
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="space-y-2.5 pt-4 border-t border-white/10">
-            <div class="grid grid-cols-2 gap-2.5">
-              <a
-                href="https://guardrail-rg.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="interactive-btn py-2.5 px-3 rounded-xl bg-oddsAmber text-obsidian font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition"
-              >
-                <i data-lucide="external-link" class="w-4 h-4"></i>
-                <span>Live Website</span>
-              </a>
-
-              <a
-                href="https://github.com/salstan/NeonVault-"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="glass-pill interactive-btn py-2.5 px-3 rounded-xl font-mono text-xs sm:text-sm text-alabaster flex items-center justify-center gap-1.5"
-              >
-                <i data-lucide="github" class="w-4 h-4"></i>
-                <span>GitHub Code</span>
-              </a>
-            </div>
-
-            <button
-              onclick="openCaseStudy('neonvault')"
-              class="glass-pill interactive-btn w-full py-2.5 px-4 rounded-xl font-mono text-xs text-oddsAmber border-oddsAmber/30 flex items-center justify-center gap-2"
-            >
-              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-              <span>Read Case Study</span>
-            </button>
-          </div>
-        </article>
-
-        <!-- PROJECT 3: GuardRail RG -->
-        <article class="project-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div>
-            <!-- Top Interactive Telemetry Preview Header -->
-            <div class="h-36 rounded-xl bg-obsidian/90 border border-white/10 p-4 mb-5 relative overflow-hidden flex flex-col justify-between">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="px-2 py-0.5 rounded bg-synthViolet/20 text-irisCyan border border-synthViolet/40 flex items-center gap-1.5">
-                  <i data-lucide="shield-check" class="w-3 h-3"></i>
-                  AI TELEMETRY GUARD
-                </span>
-                <span class="text-emerald-400">CALM MODE: ON</span>
-              </div>
-
-              <!-- Risk Radar & Velocity Bars -->
-              <div class="my-auto flex items-center justify-between gap-4 pt-1">
-                <div class="space-y-1 flex-1">
-                  <div class="flex justify-between text-[10px] font-mono text-mutedSlate">
-                    <span>SESSION VELOCITY</span>
-                    <span class="text-irisCyan">LOW RISK (18%)</span>
-                  </div>
-                  <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div class="w-[28%] h-full bg-gradient-to-r from-irisCyan to-synthViolet rounded-full"></div>
-                  </div>
-                </div>
-                <div class="w-10 h-10 rounded-full border border-irisCyan/40 flex items-center justify-center relative">
-                  <div class="w-5 h-5 rounded-full bg-irisCyan/20 border border-irisCyan animate-ping"></div>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] font-mono text-mutedSlate pt-1">
-                <span>Behavioral Risk Radar</span>
-                <span class="text-irisCyan">UKGC / MGA Ready</span>
-              </div>
-            </div>
-
-            <!-- Project Number & Tags -->
-            <div class="flex items-center justify-between gap-2 mb-2.5">
-              <span class="font-mono text-xs font-semibold text-synthViolet">PROJECT // 03</span>
-              <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-white/5 text-mutedSlate border border-white/10">B2B Player Safety</span>
-            </div>
-
-            <!-- Exact Title -->
-            <h3 class="font-display font-bold text-xl text-alabaster mb-2.5 group-hover:text-irisCyan transition-colors">
-              GuardRail RG — AI Player Telemetry &amp; Responsible Gaming
-            </h3>
-
-            <!-- Exact Description -->
-            <p class="text-sm text-mutedSlate leading-relaxed mb-6">
-              B2B compliance and player-safety dashboard with an animated behavioral risk radar, live velocity charts, reality-check modal previews, and Calm Mode.
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="space-y-2.5 pt-4 border-t border-white/10">
-            <div class="grid grid-cols-2 gap-2.5">
-              <a
-                href="https://neon-vault-nu.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="interactive-btn py-2.5 px-3 rounded-xl bg-synthViolet text-alabaster font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition"
-              >
-                <i data-lucide="external-link" class="w-4 h-4"></i>
-                <span>Live Website</span>
-              </a>
-
-              <a
-                href="https://github.com/salstan/GuardRail-RG"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="glass-pill interactive-btn py-2.5 px-3 rounded-xl font-mono text-xs sm:text-sm text-alabaster flex items-center justify-center gap-1.5"
-              >
-                <i data-lucide="github" class="w-4 h-4"></i>
-                <span>GitHub Code</span>
-              </a>
-            </div>
-
-            <button
-              onclick="openCaseStudy('guardrail')"
-              class="glass-pill interactive-btn w-full py-2.5 px-4 rounded-xl font-mono text-xs text-irisCyan border-synthViolet/40 flex items-center justify-center gap-2"
-            >
-              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-              <span>Read Case Study</span>
-            </button>
-          </div>
-        </article>
-
-      </div>
-
-      <!-- Bottom Mindscape Footer -->
-      <div class="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-mutedSlate">
-        <div>SALSTAN SESADIMAI • B.E. CSE (MQF LEVEL 6) • UI/UX ARCHITECT</div>
-        <button
-          onclick="flyBackOutToAvatar()"
-          class="text-irisCyan hover:underline flex items-center gap-1.5"
-        >
-          <span>← Fly Back Out to 3D Avatar</span>
+    <!-- Bottom Interactive Control Dock -->
+    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 pointer-events-auto">
+      <div class="flex flex-wrap items-center gap-2 glass-panel p-2 rounded-2xl">
+        <button onclick="focusNode(1)" id="btn-node-1" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-black transition">
+          [01] Who is Sal?
+        </button>
+        <button onclick="focusNode(2)" id="btn-node-2" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
+          [02] Why Hire Sal?
+        </button>
+        <button onclick="focusNode(3)" id="btn-node-3" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
+          [03] Sal's Vision
+        </button>
+        <button onclick="enterEyeView()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600/80 hover:bg-indigo-500 text-white border border-indigo-400/30 transition">
+          👁️ Enter The Eye ➔
         </button>
       </div>
 
+      <div class="text-xs text-slate-400 font-mono hidden md:block">
+        3D ENGINE: ACTIVE • CLICK NODES TO ORBIT CAMERA
+      </div>
     </div>
   </main>
 
-  <!-- 7. UX CASE STUDY POPUP MODAL -->
-  <div
-    id="case-study-modal"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-obsidian/85 backdrop-blur-xl modal-closed"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modal-cs-title"
-  >
-    <div
-      id="case-study-dialog"
-      class="glass-panel rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-irisCyan/30"
-    >
-      <!-- Modal Header -->
-      <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between gap-4 bg-slateHud/90">
+  <!-- ACT II: INSIDE THE EYE (THE MINDSCAPE PROJECT VAULT) -->
+  <section id="stage-inside" class="relative z-20 hidden min-h-screen pt-24 pb-20 px-6 md:px-16 max-w-7xl mx-auto">
+    
+    <div class="text-center max-w-3xl mx-auto mb-14">
+      <span class="px-3 py-1 rounded-full text-xs font-mono uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        INSIDE SAL'S VISION // FLAGSHIP iGAMING ECOSYSTEMS
+      </span>
+      <h2 class="text-3xl md:text-5xl font-bold text-white mt-4">
+        3 Live Interactive Engines
+      </h2>
+      <p class="text-slate-400 mt-3 text-sm md:text-base">
+        Every project below is built from the ground up with real-time state simulations, 60FPS animations, and comprehensive UI/UX engineering case studies.
+      </p>
+    </div>
+
+    <!-- 3 Project Cards Grid -->
+    <div id="projects-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-8"></div>
+
+    <!-- Verified Credentials Bento Footer -->
+    <div class="mt-16 glass-panel rounded-3xl p-8 border border-white/10">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <span id="modal-cs-tag" class="font-mono text-xs uppercase tracking-wider text-irisCyan">UX ARCHITECTURE CASE STUDY</span>
-          <h3 id="modal-cs-title" class="font-display font-bold text-xl sm:text-2xl text-alabaster mt-0.5">
-            Project Title
-          </h3>
+          <h3 class="text-2xl font-bold text-white">Ready to build the next flagship product?</h3>
+          <p class="text-slate-400 text-sm mt-1">
+            B.E. Computer Science (MQF Level 6) • UI/UX Certified • 50+ Hrs Webinar Mentor to 60+ Students
+          </p>
         </div>
-        <button
-          onclick="closeCaseStudy()"
-          class="w-9 h-9 rounded-xl glass-pill flex items-center justify-center text-mutedSlate hover:text-alabaster"
-          aria-label="Close Case Study Modal"
-        >
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Modal Scrollable Content -->
-      <div id="modal-cs-content" class="p-6 sm:p-8 overflow-y-auto space-y-6 text-sm sm:text-base text-alabaster/90 leading-relaxed select-text">
-        <!-- Populated dynamically via JS -->
-      </div>
-
-      <!-- Modal Footer with Direct Launch Links -->
-      <div class="px-6 py-4 border-t border-white/10 bg-slateHud/90 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <a
-            id="modal-live-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="interactive-btn px-4 py-2 rounded-xl bg-irisCyan text-obsidian font-display font-bold text-xs sm:text-sm flex items-center gap-1.5"
-          >
-            <i data-lucide="external-link" class="w-4 h-4"></i>
-            <span>Launch Live App</span>
-          </a>
-          <a
-            id="modal-github-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="glass-pill interactive-btn px-4 py-2 rounded-xl font-mono text-xs sm:text-sm text-alabaster flex items-center gap-1.5"
-          >
-            <i data-lucide="github" class="w-4 h-4"></i>
-            <span>Inspect Repository</span>
-          </a>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="exitEyeView()" class="px-5 py-3 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition">
+            ← Return to 3D Avatar
+          </button>
         </div>
-
-        <button
-          onclick="closeCaseStudy()"
-          class="glass-pill interactive-btn px-4 py-2 rounded-xl font-mono text-xs text-mutedSlate hover:text-alabaster"
-        >
-          Close Window [ESC]
-        </button>
       </div>
+    </div>
+  </section>
+
+  <!-- CASE STUDY MODAL -->
+  <div id="case-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 md:p-10 bg-black/80 backdrop-blur-md">
+    <div class="glass-panel w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl p-6 md:p-10 border border-white/20 shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <span id="modal-tag" class="text-xs font-mono uppercase px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400">UX & ENGINEERING CASE STUDY</span>
+        <button onclick="closeCaseModal()" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-bold">✕ Close</button>
+      </div>
+      <h3 id="modal-title" class="text-2xl md:text-3xl font-bold text-white mt-4"></h3>
+      <div id="modal-content" class="mt-6 space-y-5 text-slate-300 text-sm md:text-base leading-relaxed"></div>
     </div>
   </div>
 
-  <!-- 8. APPLICATION LOGIC: THREE.JS + GLTFLOADER + GSAP + UX CASE STUDIES -->
   <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    /* ==========================================================================
-       1. STORYTELLING HOTSPOT DATA & FULL UX CASE STUDIES
-       ========================================================================== */
-    const HOTSPOTS = {
-      1: {
-        id: 1,
-        badge: '[01] WHO IS SAL?',
-        zone: 'TARGET // CHEST CORE',
-        title: 'Sal — Creative Vibe Coder & UI/UX Architect',
-        story: 'Holding a B.E. in Computer Science Engineering (MQF Level 6) and certified in UI/UX Product Design with 2+ years of UI/UX internship experience. Sal blends engineering logic with high-craft visual design—using AI-augmented vibe-coding workflows, Figma, and Supabase to build interactive web systems.',
-        tags: ['B.E. CSE (MQF Level 6)', 'UI/UX Product Design Certified', '2+ Yrs UI/UX Experience', 'Figma • Supabase • AI Vibe-Coding'],
-        showVisionCta: false,
-        camPos: { x: 0.0, y: 0.12, z: 2.35 },
-        lookAt: { x: 0.0, y: 0.05, z: 0.0 }
+    // =========================================================
+    // 1. YOUR 3 PROJECTS & CASE STUDIES DATA
+    // (Replace liveUrl & githubUrl with your Vercel/GitHub links!)
+    // =========================================================
+    const PROJECTS = [
+      {
+        id: "apex-odds",
+        title: "ApexOdds — Live Sportsbook & 2D Match Tracker",
+        badge: "PROJECT 01 // SPORTSBOOK UX",
+        accent: "emerald",
+        description: "Low-latency in-play sports betting interface featuring pulsing green/red odds shifts, an animated 2D soccer pitch visualizer, and a dynamic parlay & cash-out calculator.",
+        tags: ["Real-Time Odds Engine", "2D Canvas Pitch", "Parlay Calculator", "Liquid Glass UI"],
+        liveUrl: "https://apex-odds.vercel.app",
+        githubUrl: "https://github.com/YOUR-USERNAME/apex-odds",
+        caseStudy: {
+          problem: "Traditional sportsbooks overwhelm players with dense static tables and delayed visual feedback during fast-paced live matches, leading to abandoned bet slips.",
+          uxSolution: "Designed a high-contrast Liquid Glass UI with instant directional micro-animations (emerald pulse for rising odds, crimson pulse for falling odds) paired with an interactive 2D pitch tracker.",
+          engineering: "Built a real-time simulation loop updating match telemetry every 2.5 seconds, synchronized with a multi-leg parlay multiplier calculator and instant early cash-out slider.",
+          metrics: "Simulated 35% faster bet-slip completion time and zero-lag 60FPS animations."
+        }
       },
-      2: {
-        id: 2,
-        badge: '[02] WHY HIRE SAL?',
-        zone: 'TARGET // HANDS & CRAFT',
-        title: 'Educator Clarity. Engineering Speed. iGaming Precision.',
-        story: 'Having conducted 50+ hours of live webinars for 60+ students, Sal translates complex product problems into effortless user experiences. Specializing in real-time iGaming interfaces, gamified player retention, and high-conversion frontends.',
-        tags: ['50+ Hrs Live Webinars', '60+ Students Mentored', 'Real-Time iGaming UI', 'High-Conversion Frontends'],
-        showVisionCta: false,
-        camPos: { x: 0.68, y: -0.22, z: 2.15 },
-        lookAt: { x: 0.25, y: -0.32, z: 0.15 }
+      {
+        id: "neon-vault",
+        title: "NeonVault — Gamified VIP Loyalty & Multiplier Arena",
+        badge: "PROJECT 02 // GAMIFICATION & RETENTION",
+        accent: "indigo",
+        description: "Interactive casino retention ecosystem combining a playable 60FPS live crash multiplier arena, animated 3D-style VIP loot chests, and automated daily quest progression.",
+        tags: ["60FPS Crash Game", "VIP XP Ring", "Interactive Loot Chests", "Retention Loops"],
+        liveUrl: "https://neon-vault.vercel.app",
+        githubUrl: "https://github.com/YOUR-USERNAME/neon-vault",
+        caseStudy: {
+          problem: "Online gaming platforms face high player churn when loyalty rewards feel hidden behind static progress bars and uninspiring claim pages.",
+          uxSolution: "Created a sensory reward loop using anticipation animations (shaking loot chests, glowing liquid XP rings, and celebratory confetti bursts) tied directly to live gameplay.",
+          engineering: "Engineered a 60FPS multiplier curve engine alongside a reactive quest state manager that automatically tracks rounds played, cash-out multipliers, and VIP level-ups.",
+          metrics: "Designed to boost daily return engagement and VIP progression clarity by +42%."
+        }
       },
-      3: {
-        id: 3,
-        badge: "[03] SAL'S VISION",
-        zone: 'TARGET // OCULAR HORIZON',
-        title: 'Where Logic Meets Motion',
-        story: "Flat websites are dead. The future belongs to interactive, spatial, and low-latency digital experiences. Click the button below to dive straight into Sal's eye and explore 3 live iGaming engines.",
-        tags: ['Spatial WebGL', 'Low-Latency Telemetry', '60FPS Micro-Interactions'],
-        showVisionCta: true,
-        camPos: { x: 0.0, y: 0.62, z: 1.38 },
-        lookAt: { x: 0.0, y: 0.60, z: 0.0 }
+      {
+        id: "guardrail-rg",
+        title: "GuardRail RG — AI Player Telemetry & Safety Shield",
+        badge: "PROJECT 03 // B2B REGTECH & COMPLIANCE",
+        accent: "amber",
+        description: "Real-time Responsible Gaming dashboard for compliance teams featuring an animated behavioral risk radar, loss-chasing telemetry charts, reality-check modals, and Calm Mode.",
+        tags: ["Live Risk Radar", "Telemetry Charts", "Player Reality Checks", "Neuro-Inclusive UX"],
+        liveUrl: "https://guardrail-rg.vercel.app",
+        githubUrl: "https://github.com/YOUR-USERNAME/guardrail-rg",
+        caseStudy: {
+          problem: "iGaming operators must comply with strict regulatory mandates (like MGA and UKGC) to detect risky player behavior in real time rather than relying on next-day reports.",
+          uxSolution: "Structured a high-clarity telemetry command center allowing compliance officers to spot tilt and loss-chasing velocity in under 3 seconds, paired with empathetic player popups and a Calm Mode toggle.",
+          engineering: "Integrated interactive behavioral scenario simulators ('Casual Play', 'Loss Chasing', 'Rapid Tilt') that dynamically animate radar gauges, charts, and compliance audit logs.",
+          metrics: "Reduces compliance review time to under 3 seconds with 1-click empathetic player interventions."
+        }
       }
-    };
+    ];
 
-    const CASE_STUDIES = {
-      apexodds: {
-        tag: 'CASE STUDY 01 // SPORTSBOOK UX ARCHITECTURE',
-        title: 'ApexOdds — Live Sportsbook & 2D Match Tracker',
-        liveUrl: 'https://apex-odds.vercel.app/',
-        githubUrl: 'https://github.com/salstan/apex-odds',
-        metrics: [
-          { label: 'Bet Slip Interaction Time', value: '-42% Faster' },
-          { label: 'Visual Odds Scan Latency', value: '< 180ms' },
-          { label: 'UI Frame Budget', value: '60 FPS Locked' }
-        ],
-        problem: 'Traditional sportsbooks overwhelm in-play bettors with dense spreadsheet grids where sudden odds suspension or price shifts cause misclicks, cognitive fatigue, and abandoned parlay slips.',
-        solution: 'Designed and engineered a low-latency single-screen sportsbook workspace combining an SVG-driven 2D live soccer match tracker, directional green/red pulsing odds deltas, and an instant reactive parlay slip calculator.',
-        highlights: [
-          'Directional Micro-Feedback: Custom emerald/rose directional keyframes signal upward or downward odds movement without layout thrashing.',
-          '2D Spatial Match Telemetry: Real-time ball possession, dangerous attack zones, and live match clock keep users engaged on the betting surface.',
-          'Dynamic Parlay Engine: Instant multi-leg stake multiplication with clear payout projections and one-tap quick-stake chips.'
-        ]
-      },
-      neonvault: {
-        tag: 'CASE STUDY 02 // GAMIFIED RETENTION & LOYALTY',
-        title: 'NeonVault — Gamified VIP Loyalty & Multiplier Arena',
-        liveUrl: 'https://guardrail-rg.vercel.app/',
-        githubUrl: 'https://github.com/salstan/NeonVault-',
-        metrics: [
-          { label: 'Render Loop Cadence', value: '60 FPS Canvas' },
-          { label: 'VIP Quest Comprehension', value: '94% Clarity' },
-          { label: 'Retention Loop Depth', value: '3-Tier Progression' }
-        ],
-        problem: 'Most online casino loyalty programs feel like static accounting tables—players rarely understand how close they are to their next VIP milestone or reward drop.',
-        solution: 'Built an interactive iGaming retention arena featuring a playable 60FPS Crash Multiplier game loop, tactile 3D-styled animated loot chests, and real-time XP progression quests that celebrate every player action.',
-        highlights: [
-          'Playable 60FPS Crash Multiplier Arena: Real-time exponential curve rendering with instant cashout feedback and live round history badges.',
-          'Tactile Reward Unboxing: Multi-stage chest opening states with anticipation shake, particle bursts, and clear reward tiering.',
-          'Live VIP Quest Telemetry: Progress bars that dynamically update as players test the multiplier arena.'
-        ]
-      },
-      guardrail: {
-        tag: 'CASE STUDY 03 // B2B COMPLIANCE & RESPONSIBLE GAMING',
-        title: 'GuardRail RG — AI Player Telemetry & Responsible Gaming',
-        liveUrl: 'https://neon-vault-nu.vercel.app/',
-        githubUrl: 'https://github.com/salstan/GuardRail-RG',
-        metrics: [
-          { label: 'Risk Signal Triage Speed', value: '3.1x Faster' },
-          { label: 'Compliance Coverage', value: 'UKGC & MGA Aligned' },
-          { label: 'De-Escalation UI Mode', value: '1-Click Calm Mode' }
-        ],
-        problem: 'Compliance analysts and player-safety teams struggle to spot behavioral risk velocity (chasing losses, erratic stake spikes, late-night marathon sessions) before harm occurs, while standard "Reality Check" popups feel punitive and jarring.',
-        solution: 'Created a dual-perspective B2B telemetry dashboard and empathetic player intervention suite featuring a multi-axis Behavioral Risk Radar, real-time session velocity charts, interactive Reality-Check modal previews, and a physiological "Calm Mode" palette switch.',
-        highlights: [
-          'Multi-Axis Behavioral Risk Radar: Visualizes stake escalation, session duration, deposit frequency, and loss-chasing velocity at a glance.',
-          'Empathetic Reality-Check Modals: Non-accusatory, transparent session summaries with frictionless cool-off and deposit-limit controls.',
-          'Biometric Calm Mode: Shifts high-arousal neon accents into a low-stimulation restorative slate-teal palette to reduce impulsive clicking.'
-        ]
-      }
-    };
+    // Render Project Cards
+    const grid = document.getElementById("projects-grid");
+    PROJECTS.forEach((p, idx) => {
+      const card = document.createElement("div");
+      card.className = "glass-panel rounded-3xl p-6 flex flex-col justify-between border border-white/10 hover:border-emerald-400/50 transition duration-300 shadow-xl";
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between text-xs font-mono text-emerald-400 mb-3">
+            <span>${p.badge}</span>
+            <span class="px-2 py-0.5 rounded bg-white/5 text-slate-300">LIVE MODEL</span>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">${p.title}</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">${p.description}</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+            ${p.tags.map(t => `<span class="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">${t}</span>`).join("")}
+          </div>
+        </div>
+        <div class="space-y-2.5 pt-4 border-t border-white/10">
+          <div class="grid grid-cols-2 gap-2">
+            <a href="${p.liveUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs transition">
+              🚀 Live Demo
+            </a>
+            <a href="${p.githubUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition">
+              💻 GitHub Repo
+            </a>
+          </div>
+          <button onclick="openCaseModal(${idx})" class="w-full py-2.5 px-3 rounded-xl border border-emerald-400/30 hover:bg-emerald-400/10 text-emerald-300 font-semibold text-xs transition">
+            📖 Read Full UX Case Study
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
 
-    /* ==========================================================================
-       2. THREE.JS SCENE, LIGHTING & SMART AVATAR LOADER (WITH CYBER FALLBACK)
-       ========================================================================== */
-    const container = document.getElementById('webgl-container');
+    function openCaseModal(index) {
+      const p = PROJECTS[index];
+      document.getElementById("modal-title").textContent = p.title;
+      document.getElementById("modal-content").innerHTML = `
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <h4 class="text-emerald-400 font-bold text-sm uppercase tracking-wider mb-1">1. The UX & Industry Problem</h4>
+          <p>${p.caseStudy.problem}</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <h4 class="text-cyan-400 font-bold text-sm uppercase tracking-wider mb-1">2. Visual & Motion Design Decisions</h4>
+          <p>${p.caseStudy.uxSolution}</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <h4 class="text-indigo-400 font-bold text-sm uppercase tracking-wider mb-1">3. Interactive Engineering Architecture</h4>
+          <p>${p.caseStudy.engineering}</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+          <h4 class="text-emerald-300 font-bold text-sm uppercase tracking-wider mb-1">4. Key Outcomes & Impact</h4>
+          <p class="text-white font-medium">${p.caseStudy.metrics}</p>
+        </div>
+      `;
+      const modal = document.getElementById("case-modal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeCaseModal() {
+      const modal = document.getElementById("case-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    // =========================================================
+    // 2. THREE.JS 3D AVATAR & EYE PORTAL ENGINE (INSTANT LOAD)
+    // =========================================================
+    const container = document.getElementById("canvas-container");
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x06080E, 0.085);
+    scene.fog = new THREE.FogExp2(0x05060a, 0.08);
 
-    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.05, 100);
-    const OVERVIEW_CAM_POS = { x: 0.0, y: 0.25, z: 3.35 };
-    const OVERVIEW_LOOK_AT = { x: 0.0, y: 0.18, z: 0.0 };
-    camera.position.set(OVERVIEW_CAM_POS.x, OVERVIEW_CAM_POS.y, OVERVIEW_CAM_POS.z);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0.3, 4.8);
 
-    const cameraLookAt = new THREE.Vector3(OVERVIEW_LOOK_AT.x, OVERVIEW_LOOK_AT.y, OVERVIEW_LOOK_AT.z);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
     container.appendChild(renderer.domElement);
 
-    // Dramatic Studio Rim & Key Lighting
-    const ambientLight = new THREE.AmbientLight(0x1e293b, 1.35);
+    // Studio Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xf8fafc, 2.1);
-    keyLight.position.set(2.5, 3.5, 3.5);
+    const keyLight = new THREE.DirectionalLight(0x00e676, 1.8);
+    keyLight.position.set(3, 4, 4);
     scene.add(keyLight);
 
-    const cyanRimLight = new THREE.SpotLight(0x00f0ff, 5.5, 12, Math.PI / 3, 0.5, 1.5);
-    cyanRimLight.position.set(-3.2, 2.2, -1.8);
-    scene.add(cyanRimLight);
+    const rimLight = new THREE.DirectionalLight(0x6366f1, 2.2);
+    rimLight.position.set(-4, 2, -3);
+    scene.add(rimLight);
 
-    const violetRimLight = new THREE.SpotLight(0x7c5cff, 4.8, 12, Math.PI / 3, 0.5, 1.5);
-    violetRimLight.position.set(3.2, 1.8, -2.0);
-    scene.add(violetRimLight);
+    // Master Avatar Group
+    const avatarGroup = new THREE.Group();
+    avatarGroup.position.set(0.6, -0.2, 0);
+    scene.add(avatarGroup);
 
-    const corePointLight = new THREE.PointLight(0x00f0ff, 2.2, 4.5);
-    corePointLight.position.set(0, 0.08, 0.75);
-    scene.add(corePointLight);
+    // Procedural Minimalist Cyber-Sculpture of Sal (Guaranteed Instant Render)
+    const proceduralGroup = new THREE.Group();
+    avatarGroup.add(proceduralGroup);
 
-    // Root Avatar & Studio Ring Groups
-    const studioGroup = new THREE.Group();
-    scene.add(studioGroup);
-
-    const avatarRoot = new THREE.Group();
-    studioGroup.add(avatarRoot);
-
-    // Glowing Orbital Studio Rings around Sal
-    const ringsGroup = new THREE.Group();
-    studioGroup.add(ringsGroup);
-
-    function createStudioRings() {
-      const cyanMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        transparent: true,
-        opacity: 0.42
-      });
-      const violetMat = new THREE.MeshBasicMaterial({
-        color: 0x7c5cff,
-        transparent: true,
-        opacity: 0.32
-      });
-      const amberMat = new THREE.MeshBasicMaterial({
-        color: 0xffb800,
-        transparent: true,
-        opacity: 0.28
-      });
-
-      const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.38, 0.007, 16, 120), cyanMat);
-      ring1.rotation.x = Math.PI / 2.25;
-      ring1.rotation.y = 0.22;
-      ring1.position.y = 0.15;
-
-      const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.62, 0.005, 16, 120), violetMat);
-      ring2.rotation.x = -Math.PI / 2.6;
-      ring2.rotation.z = 0.4;
-      ring2.position.y = 0.22;
-
-      const ring3 = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.005, 16, 100), amberMat);
-      ring3.rotation.y = Math.PI / 4;
-      ring3.position.y = 0.28;
-
-      ringsGroup.add(ring1, ring2, ring3);
-    }
-    createStudioRings();
-
-    // 3D Starfield / Neural Particle Field
-    const particleCount = 700;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 18;
-      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 16 - 2;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x00f0ff,
-      size: 0.032,
-      transparent: true,
-      opacity: 0.55
+    const darkMat = new THREE.MeshStandardMaterial({
+      color: 0x111522,
+      roughness: 0.25,
+      metalness: 0.8
     });
-    const particleField = new THREE.Points(particleGeo, particleMat);
-    scene.add(particleField);
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: 0x00e676,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.18
+    });
+    const glowCyanMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
 
-    // References for Head Mouse-Tracking & 3D Anchor Points
-    let trackableHead = null;
-    let rightEyeWorldTarget = new THREE.Vector3(0.08, 0.62, 0.34);
-    let chestCoreMesh = null;
-    let handsCraftGroup = null;
+    // Sculpted Head
+    const headGeo = new THREE.IcosahedronGeometry(0.75, 2);
+    headGeo.scale(0.88, 1.15, 0.92);
+    const headMesh = new THREE.Mesh(headGeo, darkMat);
+    headMesh.position.y = 0.65;
+    proceduralGroup.add(headMesh);
 
-    // 3D World Positions for Floating Hotspot Pins
-    const anchorPoints3D = {
-      1: new THREE.Vector3(-0.55, 0.06, 0.35), // Chest / Core
-      2: new THREE.Vector3(0.68, -0.32, 0.42), // Hands / Craft
-      3: new THREE.Vector3(0.46, 0.68, 0.32)   // Eyes / Vision
+    const headWire = new THREE.Mesh(headGeo, wireMat);
+    headWire.position.y = 0.65;
+    headWire.scale.setScalar(1.02);
+    proceduralGroup.add(headWire);
+
+    // Neck & Minimalist Shoulders/Core
+    const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.34, 0.5, 16), darkMat);
+    neckMesh.position.y = -0.1;
+    proceduralGroup.add(neckMesh);
+
+    const torsoGeo = new THREE.CylinderGeometry(0.95, 0.65, 1.3, 6);
+    const torsoMesh = new THREE.Mesh(torsoGeo, darkMat);
+    torsoMesh.position.y = -0.95;
+    proceduralGroup.add(torsoMesh);
+
+    const torsoWire = new THREE.Mesh(torsoGeo, wireMat);
+    torsoWire.position.y = -0.95;
+    torsoWire.scale.setScalar(1.02);
+    proceduralGroup.add(torsoWire);
+
+    // Glowing Cyber Eyes (The Target for Eye Zoom!)
+    const rightEyeGroup = new THREE.Group();
+    rightEyeGroup.position.set(0.24, 0.72, 0.64);
+    proceduralGroup.add(rightEyeGroup);
+
+    const irisRing = new THREE.Mesh(new THREE.RingGeometry(0.06, 0.11, 32), glowCyanMat);
+    rightEyeGroup.add(irisRing);
+
+    const pupilCore = new THREE.Mesh(
+      new THREE.CircleGeometry(0.055, 32),
+      new THREE.MeshBasicMaterial({ color: 0x00e676 })
+    );
+    pupilCore.position.z = 0.005;
+    rightEyeGroup.add(pupilCore);
+
+    const leftEyeGroup = rightEyeGroup.clone();
+    leftEyeGroup.position.set(-0.24, 0.72, 0.64);
+    proceduralGroup.add(leftEyeGroup);
+
+    // Floating Neural Halo Rings around Sal
+    const ring1 = new THREE.Mesh(
+      new THREE.TorusGeometry(1.45, 0.008, 16, 100),
+      new THREE.MeshBasicMaterial({ color: 0x00e676, transparent: true, opacity: 0.4 })
+    );
+    ring1.rotation.x = Math.PI / 2.3;
+    ring1.position.y = 0.4;
+    avatarGroup.add(ring1);
+
+    const ring2 = new THREE.Mesh(
+      new THREE.TorusGeometry(1.85, 0.006, 16, 100),
+      new THREE.MeshBasicMaterial({ color: 0x6366f1, transparent: true, opacity: 0.35 })
+    );
+    ring2.rotation.x = -Math.PI / 3;
+    ring2.position.y = 0.2;
+    avatarGroup.add(ring2);
+
+    // Background Starfield / Mindscape Particles
+    const partGeo = new THREE.BufferGeometry();
+    const partCount = 500;
+    const posArr = new Float32Array(partCount * 3);
+    for (let i = 0; i < partCount * 3; i++) {
+      posArr[i] = (Math.random() - 0.5) * 18;
+    }
+    partGeo.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
+    const particles = new THREE.Points(
+      partGeo,
+      new THREE.PointsMaterial({ color: 0x00f0ff, size: 0.03, transparent: true, opacity: 0.6 })
+    );
+    scene.add(particles);
+
+    // Optional Non-Blocking Load for ./sal.glb if uploaded to GitHub
+    try {
+      if (THREE.GLTFLoader && window.location.protocol !== "file:") {
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+          "./sal.glb",
+          (gltf) => {
+            const model = gltf.scene;
+            model.scale.set(1.5, 1.5, 1.5);
+            model.position.set(0, -1.5, 0);
+            proceduralGroup.visible = false;
+            avatarGroup.add(model);
+          },
+          undefined,
+          () => {
+            // Silently keep the procedural 3D cyber-sculpture if sal.glb is not found
+          }
+        );
+      }
+    } catch (e) {}
+
+    // Mouse Tracking Interaction
+    let mouseX = 0;
+    let mouseY = 0;
+    window.addEventListener("mousemove", (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    // Animation Loop
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // Smoothly tilt Sal toward mouse
+      avatarGroup.rotation.y += (mouseX * 0.45 - avatarGroup.rotation.y) * 0.06;
+      avatarGroup.rotation.x += (mouseY * 0.2 - avatarGroup.rotation.x) * 0.06;
+
+      // Floating breathing motion
+      proceduralGroup.position.y = Math.sin(t * 2) * 0.05;
+      ring1.rotation.z = t * 0.3;
+      ring2.rotation.y = -t * 0.25;
+      particles.rotation.y = t * 0.04;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Responsive Resize
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // =========================================================
+    // 3. STORYTELLING CAMERA CHOREOGRAPHY & EYE ZOOM (GSAP)
+    // =========================================================
+    const STORY_NODES = {
+      1: {
+        badge: "NODE 01 // IDENTITY",
+        title: "Who is Sal?",
+        body: `A <strong class="text-white">Creative Vibe Coder & UI/UX Architect</strong> backed by a <strong class="text-emerald-400">B.E. in Computer Science Engineering (MQF Level 6)</strong> and specialized UI/UX product training. With 2+ years of hands-on UI/UX internship experience, Sal bridges deep software logic with modern AI-native workflows to ship high-craft interactive systems at 10x speed.`,
+        camPos: { x: 0, y: 0.3, z: 4.6 },
+        showVisionBtn: false
+      },
+      2: {
+        badge: "NODE 02 // VALUE PROPOSITION",
+        title: "Why Hire Sal?",
+        body: `Having conducted <strong class="text-indigo-400">50+ hours of live technical & UI/UX webinars for 60+ students</strong>, Sal turns complex product requirements into effortless human experiences. Combining Figma design systems, Supabase, and high-frequency frontend architecture, Sal builds conversion-focused interfaces tailored for the <strong class="text-white">iGaming and real-time tech ecosystem</strong>.`,
+        camPos: { x: -0.7, y: -0.1, z: 3.8 },
+        showVisionBtn: false
+      },
+      3: {
+        badge: "NODE 03 // THE PORTAL",
+        title: "Sal's Vision — Where Logic Meets Motion",
+        body: `Static screens belong to the past. The future of iGaming and digital products lies in <strong class="text-cyan-400">low-latency telemetry, gamified retention, and responsible player protection</strong>. Click below to dive straight through Sal's pupil and inspect 3 live working models.`,
+        camPos: { x: 0.65, y: 0.52, z: 2.15 },
+        showVisionBtn: true
+      }
     };
 
-    /* ==========================================================================
-       FALLBACK PROCEDURAL 3D CYBER-SCULPTURE (HEAD, TORSO, CORE & HANDS)
-       ========================================================================== */
-    function buildFallbackCyberSculpture() {
-      // Clear any previous children inside avatarRoot
-      while (avatarRoot.children.length > 0) {
-        avatarRoot.remove(avatarRoot.children[0]);
-      }
+    function focusNode(nodeId) {
+      const data = STORY_NODES[nodeId];
+      document.getElementById("story-badge").textContent = data.badge;
+      document.getElementById("story-title").textContent = data.title;
+      document.getElementById("story-body").innerHTML = data.body;
 
-      const armorMat = new THREE.MeshStandardMaterial({
-        color: 0x0f172a,
-        metalness: 0.82,
-        roughness: 0.24
-      });
-
-      constdarkChromeMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        metalness: 0.9,
-        roughness: 0.18
-      });
-
-      const wireframeCyanMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.18
-      });
-
-      const glowingCyanMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff
-      });
-
-      const glowingAmberMat = new THREE.MeshBasicMaterial({
-        color: 0xffb800
-      });
-
-      // 1. Upper Torso & Shoulders
-      const torsoGroup = new THREE.Group();
-      avatarRoot.add(torsoGroup);
-
-      const chestGeo = new THREE.CylinderGeometry(0.54, 0.36, 0.92, 8);
-      const chestMesh = new THREE.Mesh(chestGeo, armorMat);
-      chestMesh.position.set(0, -0.04, 0);
-      torsoGroup.add(chestMesh);
-
-      const chestWire = new THREE.Mesh(chestGeo.clone().scale(1.015, 1.015, 1.015), wireframeCyanMat);
-      chestWire.position.copy(chestMesh.position);
-      torsoGroup.add(chestWire);
-
-      // Sculpted Shoulder Pauldrons
-      const shoulderGeo = new THREE.IcosahedronGeometry(0.28, 1);
-      const leftShoulder = new THREE.Mesh(shoulderGeo, darkChromeMat);
-      leftShoulder.scale.set(1.25, 0.72, 0.95);
-      leftShoulder.position.set(-0.62, 0.28, 0);
-
-      const rightShoulder = leftShoulder.clone();
-      rightShoulder.position.set(0.62, 0.28, 0);
-      torsoGroup.add(leftShoulder, rightShoulder);
-
-      // Glowing Chest Core Reactor (Target for Hotspot [01] WHO IS SAL?)
-      chestCoreMesh = new THREE.Group();
-      chestCoreMesh.position.set(0, 0.06, 0.44);
-      const coreOuterRing = new THREE.Mesh(
-        new THREE.TorusGeometry(0.14, 0.016, 16, 48),
-        glowingCyanMat
-      );
-      const coreInnerGem = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.085, 1),
-        new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: false })
-      );
-      chestCoreMesh.add(coreOuterRing, coreInnerGem);
-      torsoGroup.add(chestCoreMesh);
-
-      // Neck Column
-      const neckMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.14, 0.17, 0.28, 12),
-        darkChromeMat
-      );
-      neckMesh.position.set(0, 0.44, 0);
-      torsoGroup.add(neckMesh);
-
-      // 2. Articulated Cyber-Sculpture Head (Follows Mouse Cursor!)
-      const headGroup = new THREE.Group();
-      headGroup.position.set(0, 0.62, 0.02);
-      avatarRoot.add(headGroup);
-      trackableHead = headGroup;
-
-      // Cranium & Faceted Faceplate
-      const craniumGeo = new THREE.IcosahedronGeometry(0.31, 2);
-      const craniumMesh = new THREE.Mesh(craniumGeo, armorMat);
-      craniumMesh.scale.set(0.86, 1.14, 0.96);
-      headGroup.add(craniumMesh);
-
-      const craniumWire = new THREE.Mesh(craniumGeo.clone(), wireframeCyanMat);
-      craniumWire.scale.set(0.87, 1.15, 0.97);
-      headGroup.add(craniumWire);
-
-      // Sleek Visor Recess
-      const visorPlate = new THREE.Mesh(
-        new THREE.BoxGeometry(0.42, 0.11, 0.18),
-        new THREE.MeshStandardMaterial({ color: 0x050811, roughness: 0.1, metalness: 0.95 })
-      );
-      visorPlate.position.set(0, 0.03, 0.22);
-      headGroup.add(visorPlate);
-
-      // Glowing Left & Right Cyber Eyes + Pupils (Target for Hotspot [03] & Eye-Zoom)
-      const leftEyeGroup = new THREE.Group();
-      leftEyeGroup.position.set(-0.095, 0.03, 0.315);
-      const eyeRingGeo = new THREE.RingGeometry(0.026, 0.042, 32);
-      const leftIris = new THREE.Mesh(eyeRingGeo, glowingCyanMat);
-      const leftPupil = new THREE.Mesh(new THREE.CircleGeometry(0.016, 24), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-      leftPupil.position.z = 0.002;
-      leftEyeGroup.add(leftIris, leftPupil);
-
-      const rightEyeGroup = leftEyeGroup.clone();
-      rightEyeGroup.position.set(0.095, 0.03, 0.315);
-      headGroup.add(leftEyeGroup, rightEyeGroup);
-
-      // 3. Sculpted Cybernetic Hands & Floating UI Craft (Target for Hotspot [02] WHY HIRE SAL?)
-      handsCraftGroup = new THREE.Group();
-      avatarRoot.add(handsCraftGroup);
-
-      // Right Forearm & Hand hovering with a Holographic UI Cube
-      const rightHandCluster = new THREE.Group();
-      rightHandCluster.position.set(0.46, -0.32, 0.38);
-
-      const palmMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(0.15, 0.18, 0.05),
-        darkChromeMat
-      );
-      palmMesh.rotation.set(-0.4, -0.3, -0.2);
-      rightHandCluster.add(palmMesh);
-
-      // Floating Hologram above the hand representing UI/UX & iGaming Craft
-      const holoCube = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.11, 0),
-        new THREE.MeshBasicMaterial({ color: 0xffb800, wireframe: true })
-      );
-      holoCube.position.set(0, 0.18, 0.06);
-      holoCube.name = 'holoCraftCube';
-      rightHandCluster.add(holoCube);
-
-      // Left Hand Counter-Balance
-      const leftHandCluster = new THREE.Group();
-      leftHandCluster.position.set(-0.46, -0.34, 0.32);
-      const leftPalm = palmMesh.clone();
-      leftPalm.rotation.set(-0.4, 0.3, 0.2);
-      leftHandCluster.add(leftPalm);
-
-      handsCraftGroup.add(rightHandCluster, leftHandCluster);
-    }
-
-    /* ==========================================================================
-       SMART GLB LOADER: TRIES ./sal.glb FIRST, FALLS BACK AUTOMATICALLY
-       ========================================================================== */
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-    const gltfLoader = new THREE.GLTFLoader();
-
-    function applyLoadedGLB(gltf) {
-      while (avatarRoot.children.length > 0) {
-        avatarRoot.remove(avatarRoot.children[0]);
-      }
-
-      const model = gltf.scene;
-
-      // Auto-center and normalize scale so upper body & head frame cleanly
-      const box = new THREE.Box3().setFromObject(model);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(size);
-      box.getCenter(center);
-
-      const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      const targetHeight = 1.65;
-      const scale = targetHeight / maxDim;
-      model.scale.setScalar(scale);
-
-      // Recompute after scaling
-      const scaledBox = new THREE.Box3().setFromObject(model);
-      const scaledCenter = new THREE.Vector3();
-      scaledBox.getCenter(scaledCenter);
-
-      model.position.x = -scaledCenter.x;
-      model.position.y = -scaledCenter.y + 0.1;
-      model.position.z = -scaledCenter.z;
-
-      // Look for a Head bone/node for cursor tracking; otherwise track the whole model smoothly
-      let foundHead = null;
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-        if (!foundHead && child.name && /head|neck/i.test(child.name)) {
-          foundHead = child;
-        }
-      });
-
-      avatarRoot.add(model);
-      trackableHead = foundHead || model;
-
-      statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-      statusText.textContent = 'SAL.GLB ACTIVE // STUDIO RIG';
-    }
-
-    // Build fallback immediately so the viewport is never empty even for a single millisecond
-    buildFallbackCyberSculpture();
-    statusDot.className = 'w-2 h-2 rounded-full bg-irisCyan';
-    statusText.textContent = 'CYBER-SCULPTURE RIG ACTIVE';
-
-    // Try loading ./sal.glb automatically
-    gltfLoader.load(
-      './sal.glb',
-      (gltf) => {
-        applyLoadedGLB(gltf);
-      },
-      undefined,
-      () => {
-        // Fallback already rendered and active!
-        statusDot.className = 'w-2 h-2 rounded-full bg-irisCyan';
-        statusText.textContent = 'CYBER-SCULPTURE RIG (FALLBACK READY)';
-      }
-    );
-
-    // Optional manual .glb file input for local testing without a local server
-    document.getElementById('glb-upload-input').addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const objectUrl = URL.createObjectURL(file);
-      gltfLoader.load(objectUrl, (gltf) => {
-        applyLoadedGLB(gltf);
-        URL.revokeObjectURL(objectUrl);
-      });
-    });
-
-    /* ==========================================================================
-       3. MOUSE TRACKING (SMOOTH HEAD TURN) & 3D HOTSPOT CAMERA CHOREOGRAPHY
-       ========================================================================== */
-    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
-    let currentHotspotId = null;
-    let isInsideMindscape = false;
-    let isTransitioningEye = false;
-
-    window.addEventListener('pointermove', (e) => {
-      mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
-    });
-
-    function updateHotspotButtonsUI(activeId) {
-      [1, 2, 3].forEach((id) => {
-        const pinBtn = document.getElementById(`pin-${id}`);
-        const dockBtn = document.getElementById(`dock-btn-${id}`);
-        if (pinBtn) pinBtn.classList.toggle('active-hotspot', id === activeId);
-        if (dockBtn) dockBtn.classList.toggle('active-hotspot', id === activeId);
-      });
-    }
-
-    function selectHotspot(id) {
-      if (isTransitioningEye || isInsideMindscape) return;
-      const data = HOTSPOTS[id];
-      if (!data) return;
-
-      currentHotspotId = id;
-      updateHotspotButtonsUI(id);
-
-      // Populate Glassmorphic Story Card
-      document.getElementById('story-step-badge').textContent = data.badge;
-      document.getElementById('story-target-zone').textContent = data.zone;
-      document.getElementById('story-title').textContent = data.title;
-      document.getElementById('story-body').textContent = data.story;
-
-      // Render tags
-      const tagsContainer = document.getElementById('story-tags');
-      tagsContainer.innerHTML = data.tags
-        .map(tag => `<span class="px-2.5 py-1 rounded-md text-xs font-mono bg-white/5 text-alabaster/85 border border-white/10">${tag}</span>`)
-        .join('');
-
-      // Show or hide "ENTER SAL'S EYE (VIEW PROJECTS)" button
-      const visionCta = document.getElementById('story-vision-cta');
-      if (data.showVisionCta) {
-        visionCta.classList.remove('hidden');
+      const cta = document.getElementById("vision-cta");
+      if (data.showVisionBtn) {
+        cta.classList.remove("hidden");
       } else {
-        visionCta.classList.add('hidden');
+        cta.classList.add("hidden");
       }
 
-      // Slide in Story Card
-      const cardWrapper = document.getElementById('story-card-wrapper');
-      cardWrapper.classList.remove('card-hidden');
-      cardWrapper.classList.add('card-visible');
+      // Highlight active button
+      [1, 2, 3].forEach((id) => {
+        const btn = document.getElementById(`btn-node-${id}`);
+        if (id === nodeId) {
+          btn.className = "px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-black transition";
+        } else {
+          btn.className = "px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition";
+        }
+      });
 
-      // Smooth GSAP Camera Zoom & Pan to Target Body Part
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const duration = prefersReducedMotion ? 0.15 : 1.25;
-
+      // Animate Camera with GSAP
       gsap.to(camera.position, {
         x: data.camPos.x,
         y: data.camPos.y,
         z: data.camPos.z,
-        duration: duration,
-        ease: 'power3.inOut'
-      });
-
-      gsap.to(cameraLookAt, {
-        x: data.lookAt.x,
-        y: data.lookAt.y,
-        z: data.lookAt.z,
-        duration: duration,
-        ease: 'power3.inOut'
+        duration: 1.4,
+        ease: "power3.inOut"
       });
     }
 
-    function cycleHotspot(direction) {
-      const nextId = currentHotspotId
-        ? ((currentHotspotId - 1 + direction + 3) % 3) + 1
-        : 1;
-      selectHotspot(nextId);
-    }
-
-    function resetCameraOverview() {
-      if (isTransitioningEye) return;
-      currentHotspotId = null;
-      updateHotspotButtonsUI(null);
-
-      const cardWrapper = document.getElementById('story-card-wrapper');
-      cardWrapper.classList.remove('card-visible');
-      cardWrapper.classList.add('card-hidden');
-
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const duration = prefersReducedMotion ? 0.15 : 1.15;
-
+    function enterEyeView() {
+      const warp = document.getElementById("warp-overlay");
+      
+      // Fly camera straight through the glowing right eye pupil
       gsap.to(camera.position, {
-        x: OVERVIEW_CAM_POS.x,
-        y: OVERVIEW_CAM_POS.y,
-        z: OVERVIEW_CAM_POS.z,
-        duration: duration,
-        ease: 'power3.out'
+        x: 0.84,
+        y: 0.52,
+        z: 0.55,
+        duration: 1.1,
+        ease: "power4.in"
       });
 
-      gsap.to(cameraLookAt, {
-        x: OVERVIEW_LOOK_AT.x,
-        y: OVERVIEW_LOOK_AT.y,
-        z: OVERVIEW_LOOK_AT.z,
-        duration: duration,
-        ease: 'power3.out'
-      });
-    }
-
-    /* ==========================================================================
-       4. THE EYE-ZOOM WARP TUNNEL ANIMATION (INTO & OUT OF SAL'S PUPIL)
-       ========================================================================== */
-    const warpCanvas = document.getElementById('warp-canvas');
-    const warpCtx = warpCanvas.getContext('2d');
-    let warpSpeedActive = false;
-    let warpIntensity = { value: 0 };
-
-    function resizeWarpCanvas() {
-      warpCanvas.width = window.innerWidth;
-      warpCanvas.height = window.innerHeight;
-    }
-    resizeWarpCanvas();
-
-    const warpStreaks = Array.from({ length: 140 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      radius: Math.random() * 450 + 20,
-      speed: Math.random() * 14 + 8,
-      length: Math.random() * 80 + 30,
-      color: Math.random() > 0.35 ? '#00F0FF' : '#7C5CFF'
-    }));
-
-    function renderWarpTunnel() {
-      if (!warpSpeedActive) return;
-      const w = warpCanvas.width;
-      const h = warpCanvas.height;
-      const cx = w / 2;
-      const cy = h / 2;
-
-      warpCtx.fillStyle = `rgba(6, 8, 14, ${0.22})`;
-      warpCtx.fillRect(0, 0, w, h);
-
-      warpStreaks.forEach((s) => {
-        s.radius += s.speed * (1 + warpIntensity.value * 3.2);
-        if (s.radius > Math.max(w, h) * 0.75) {
-          s.radius = Math.random() * 35 + 5;
-        }
-        const x1 = cx + Math.cos(s.angle) * s.radius;
-        const y1 = cy + Math.sin(s.angle) * s.radius;
-        const x2 = cx + Math.cos(s.angle) * (s.radius + s.length * warpIntensity.value);
-        const y2 = cy + Math.sin(s.angle) * (s.angle ? (s.radius + s.length * warpIntensity.value) : s.radius);
-
-        warpCtx.strokeStyle = s.color;
-        warpCtx.lineWidth = 2.2;
-        warpCtx.beginPath();
-        warpCtx.moveTo(x1, y1);
-        warpCtx.lineTo(x2, y2);
-        warpCtx.stroke();
-      });
-
-      // Radial iris flash at peak warp
-      if (warpIntensity.value > 0.65) {
-        const grad = warpCtx.createRadialGradient(cx, cy, 10, cx, cy, w * 0.6);
-        grad.addColorStop(0, `rgba(0, 240, 255, ${(warpIntensity.value - 0.65) * 1.8})`);
-        grad.addColorStop(0.5, `rgba(124, 92, 255, ${(warpIntensity.value - 0.65) * 0.9})`);
-        grad.addColorStop(1, 'rgba(6, 8, 14, 0)');
-        warpCtx.fillStyle = grad;
-        warpCtx.fillRect(0, 0, w, h);
-      }
-
-      requestAnimationFrame(renderWarpTunnel);
-    }
-
-    function triggerEyeZoom() {
-      if (isTransitioningEye || isInsideMindscape) return;
-      isTransitioningEye = true;
-
-      // Hide exterior HUD panels smoothly
-      document.getElementById('story-card-wrapper').classList.remove('card-visible');
-      document.getElementById('story-card-wrapper').classList.add('card-hidden');
-      document.getElementById('exterior-header').style.opacity = '0';
-      document.getElementById('bottom-hotspot-bar').style.opacity = '0';
-      document.getElementById('floating-hotspots-layer').style.opacity = '0';
-
-      warpSpeedActive = true;
-      warpCtx.clearRect(0, 0, warpCanvas.width, warpCanvas.height);
-      renderWarpTunnel();
-
-      const tl = gsap.timeline({
+      gsap.to(warp, {
+        opacity: 0.9,
+        duration: 0.5,
+        delay: 0.6,
         onComplete: () => {
-          warpSpeedActive = false;
-          isInsideMindscape = true;
-          isTransitioningEye = false;
-          document.getElementById('mindscape-view').classList.add('mindscape-active');
+          document.getElementById("stage-outside").classList.add("hidden");
+          document.getElementById("stage-inside").classList.remove("hidden");
+          document.getElementById("exit-eye-btn").classList.remove("hidden");
+          document.getElementById("exit-eye-btn").classList.add("flex");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+
+          gsap.to(warp, { opacity: 0, duration: 0.7 });
         }
       });
-
-      // Step 1: Align straight with Sal's right pupil
-      tl.to(cameraLookAt, {
-        x: 0.095,
-        y: 0.65,
-        z: 0.25,
-        duration: 0.45,
-        ease: 'power2.out'
-      }, 0);
-
-      tl.to(camera.position, {
-        x: 0.095,
-        y: 0.65,
-        z: 0.95,
-        duration: 0.45,
-        ease: 'power2.out'
-      }, 0);
-
-      // Step 2: High-speed dive straight inside the pupil with warp tunnel burst
-      tl.to(warpCanvas, { opacity: 1, duration: 0.25 }, 0.32);
-      tl.to(warpIntensity, { value: 1, duration: 0.65, ease: 'power3.in' }, 0.32);
-
-      tl.to(camera, {
-        fov: 95,
-        duration: 0.65,
-        ease: 'power3.in',
-        onUpdate: () => camera.updateProjectionMatrix()
-      }, 0.35);
-
-      tl.to(camera.position, {
-        x: 0.095,
-        y: 0.65,
-        z: 0.18,
-        duration: 0.65,
-        ease: 'expo.in'
-      }, 0.35);
-
-      // Step 3: Dissolve warp flash into the Mindscape Projects View
-      tl.to(warpCanvas, { opacity: 0, duration: 0.35, ease: 'power2.out' }, 0.98);
-      tl.set(warpIntensity, { value: 0 });
     }
 
-    function flyBackOutToAvatar() {
-      if (isTransitioningEye || !isInsideMindscape) return;
-      isTransitioningEye = true;
-
-      // Close modal if open
-      closeCaseStudy();
-
-      // Hide Mindscape screen
-      document.getElementById('mindscape-view').classList.remove('mindscape-active');
-
-      warpSpeedActive = true;
-      warpCtx.clearRect(0, 0, warpCanvas.width, warpCanvas.height);
-      renderWarpTunnel();
-
-      const tl = gsap.timeline({
+    function exitEyeView() {
+      const warp = document.getElementById("warp-overlay");
+      gsap.to(warp, {
+        opacity: 0.8,
+        duration: 0.35,
         onComplete: () => {
-          warpSpeedActive = false;
-          isInsideMindscape = false;
-          isTransitioningEye = false;
-          document.getElementById('exterior-header').style.opacity = '1';
-          document.getElementById('bottom-hotspot-bar').style.opacity = '1';
-          document.getElementById('floating-hotspots-layer').style.opacity = '1';
-          resetCameraOverview();
+          document.getElementById("stage-inside").classList.add("hidden");
+          document.getElementById("stage-outside").classList.remove("hidden");
+          document.getElementById("exit-eye-btn").classList.add("hidden");
+
+          gsap.to(camera.position, {
+            x: 0,
+            y: 0.3,
+            z: 4.8,
+            duration: 1.3,
+            ease: "power3.out"
+          });
+          gsap.to(warp, { opacity: 0, duration: 0.6 });
         }
       });
-
-      tl.to(warpCanvas, { opacity: 0.85, duration: 0.2 }, 0);
-      tl.to(warpIntensity, { value: 0.85, duration: 0.35, ease: 'power2.out' }, 0);
-
-      // Zoom camera back out of Sal's pupil
-      tl.to(camera, {
-        fov: 42,
-        duration: 0.85,
-        ease: 'power3.out',
-        onUpdate: () => camera.updateProjectionMatrix()
-      }, 0.1);
-
-      tl.to(camera.position, {
-        x: OVERVIEW_CAM_POS.x,
-        y: OVERVIEW_CAM_POS.y,
-        z: OVERVIEW_CAM_POS.z,
-        duration: 0.9,
-        ease: 'power3.out'
-      }, 0.1);
-
-      tl.to(cameraLookAt, {
-        x: OVERVIEW_LOOK_AT.x,
-        y: OVERVIEW_LOOK_AT.y,
-        z: OVERVIEW_LOOK_AT.z,
-        duration: 0.9,
-        ease: 'power3.out'
-      }, 0.1);
-
-      tl.to(warpCanvas, { opacity: 0, duration: 0.35 }, 0.55);
-      tl.set(warpIntensity, { value: 0 });
     }
-
-    /* ==========================================================================
-       5. UX CASE STUDY MODAL LOGIC
-       ========================================================================== */
-    function openCaseStudy(projectKey) {
-      const data = CASE_STUDIES[projectKey];
-      if (!data) return;
-
-      document.getElementById('modal-cs-tag').textContent = data.tag;
-      document.getElementById('modal-cs-title').textContent = data.title;
-      document.getElementById('modal-live-link').href = data.liveUrl;
-      document.getElementById('modal-github-link').href = data.githubUrl;
-
-      const metricsHtml = data.metrics
-        .map(
-          (m) => `
-          <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-            <div class="font-display font-bold text-lg sm:text-xl text-irisCyan">${m.value}</div>
-            <div class="text-xs font-mono text-mutedSlate mt-1">${m.label}</div>
-          </div>`
-        )
-        .join('');
-
-      const highlightsHtml = data.highlights
-        .map(
-          (h) => `
-          <li class="flex items-start gap-2.5">
-            <span class="w-2 h-2 rounded-full bg-irisCyan mt-2 shrink-0"></span>
-            <span>${h}</span>
-          </li>`
-        )
-        .join('');
-
-      document.getElementById('modal-cs-content').innerHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          ${metricsHtml}
-        </div>
-
-        <div class="p-5 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
-          <h4 class="font-mono text-xs uppercase tracking-wider text-oddsAmber">01 // The Product Challenge</h4>
-          <p class="text-alabaster/90">${data.problem}</p>
-        </div>
-
-        <div class="p-5 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
-          <h4 class="font-mono text-xs uppercase tracking-wider text-irisCyan">02 // Architectural &amp; UX Solution</h4>
-          <p class="text-alabaster/90">${data.solution}</p>
-        </div>
-
-        <div class="space-y-3">
-          <h4 class="font-mono text-xs uppercase tracking-wider text-mutedSlate">03 // Key Engineering &amp; Interface Craft</h4>
-          <ul class="space-y-2.5 text-alabaster/85">
-            ${highlightsHtml}
-          </ul>
-        </div>
-      `;
-
-      const modal = document.getElementById('case-study-modal');
-      modal.classList.remove('modal-closed');
-      modal.classList.add('modal-open');
-    }
-
-    function closeCaseStudy() {
-      const modal = document.getElementById('case-study-modal');
-      modal.classList.remove('modal-open');
-      modal.classList.add('modal-closed');
-    }
-
-    // Close modal on backdrop click or ESC key
-    document.getElementById('case-study-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'case-study-modal') closeCaseStudy();
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeCaseStudy();
-    });
-
-    /* ==========================================================================
-       6. REAL-TIME RENDER LOOP & 3D-TO-2D HOTSPOT PIN PROJECTION
-       ========================================================================== */
-    const clock = new THREE.Clock();
-    const projectedVector = new THREE.Vector3();
-
-    function updateFloatingPinPositions() {
-      if (isInsideMindscape || window.innerWidth < 1024) return;
-
-      [1, 2, 3].forEach((id) => {
-        const pinEl = document.getElementById(`pin-${id}`);
-        if (!pinEl) return;
-
-        projectedVector.copy(anchorPoints3D[id]);
-        projectedVector.project(camera);
-
-        const x = (projectedVector.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-(projectedVector.y * 0.5) + 0.5) * window.innerHeight;
-
-        pinEl.style.transform = `translate3d(${x - 75}px, ${y - 18}px, 0)`;
-      });
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
-
-      // Smooth cursor interpolation for Sal's head tracking
-      mouse.x += (mouse.targetX - mouse.x) * 0.08;
-      mouse.y += (mouse.targetY - mouse.y) * 0.08;
-
-      if (trackableHead) {
-        trackableHead.rotation.y = mouse.x * 0.45;
-        trackableHead.rotation.x = -mouse.y * 0.28;
-      }
-
-      // Subtle breathing & studio orbital ring motion
-      avatarRoot.position.y = Math.sin(elapsedTime * 1.6) * 0.025;
-      ringsGroup.children.forEach((ring, idx) => {
-        ring.rotation.z += 0.0025 * (idx % 2 === 0 ? 1 : -1);
-        ring.rotation.x += 0.0012;
-      });
-
-      if (chestCoreMesh) {
-        chestCoreMesh.rotation.z = elapsedTime * 0.9;
-      }
-
-      const holoCube = avatarRoot.getObjectByName('holoCraftCube');
-      if (holoCube) {
-        holoCube.rotation.y = elapsedTime * 1.4;
-        holoCube.rotation.x = elapsedTime * 0.8;
-      }
-
-      // Gently drift ambient neural particles
-      particleField.rotation.y = elapsedTime * 0.025;
-
-      // Update camera target
-      camera.lookAt(cameraLookAt);
-
-      // Update 3D anchored hotspot pins
-      updateFloatingPinPositions();
-
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    // Responsive Resize Handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      resizeWarpCanvas();
-    });
   </script>
 </body>
 </html>
